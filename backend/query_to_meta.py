@@ -7,9 +7,12 @@ import numpy as np
 import pandas as pd
 import functions as F
 import pickle
+from flask_cors import CORS
+
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
+CORS(app)
 
 ## Model & Meta Data Load
 model = KeyedVectors.load('./static/dataset/word_model/model', mmap='r')
