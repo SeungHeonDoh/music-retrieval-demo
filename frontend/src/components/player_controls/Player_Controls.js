@@ -5,7 +5,7 @@ import useMusicPlayer from '../../hook/useMusicPlayer';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Bar from "./Bar";
 import {faPause, faPlay, faStepBackward, faStepForward} from "@fortawesome/free-solid-svg-icons";
-import {InfoBar, InfoDiv, CenterDiv,ButtonDiv,ControlDiv, SongButton, ArtistName, Title} from "../../styles/component";
+import {InfoBar, InfoDiv, CenterDiv,ButtonDiv, SongButton, ArtistName, Title} from "../../styles/component";
 
 function PlayerControls() {
   const mainContext = useContext(MetaContext)

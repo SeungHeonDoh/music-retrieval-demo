@@ -6,18 +6,18 @@ const MetaContext = React.createContext()
 const MetaProvider = (props) => {
 	// Contents Level
     const [searchitem, setSearchItem] = useState([])
-	const [searchresult, setSearchResult] = useState([])
-	const [keyword, setKeyWord] = useState('')
-
+	const [tagmap, setTagmap] = useState('')
+	const [keyword, setKeyword] = useState('')
 	const [loading, setLoading] = useState(true)
 	const [songdata, setSongdata] = useState([])
 	const [tagdata, setTagdata] = useState([])
 	const [artistdata, setArtistdata] = useState([])
-	const [query, setQuery] = useState('')
+
+	const [idSearch, setIDSearch] = useState(false)
+	const [idkeyword, setIDKeyword] = useState('')
 
 	// User Level
 	const [selectSong, setSelectSong] = useState('')
-	const [rootSong, setRootSong] = useState('')
 
 	// Audio Level
 	const [audioPlayer, setAudioPlayer] = useState(new Audio())
@@ -28,8 +28,10 @@ const MetaProvider = (props) => {
 	// server data
 	const fetchData = async() => {
 		try {
-			const baseData = await axios("http://mac-daftpunk.kaist.ac.kr:7777/static/collections/search_item.json");            
-			setSearchItem(baseData);
+			const nomalize_to_display = await axios("http://mac-daftpunk.kaist.ac.kr:7777/static/dataset/nomalize_to_display.json");
+			setTagmap(nomalize_to_display.data);
+			// const baseData = await axios("http://mac-daftpunk.kaist.ac.kr:7777/static/collections/search_item.json");
+			// setSearchItem(baseData);
 			setLoading(false);
 		} catch (e) {
 			if (e) {
@@ -40,10 +42,12 @@ const MetaProvider = (props) => {
 
 	const getServerData = async(query) => {
 		setLoading(true);
+		resetPlay();
 		try{
-			const serverData = await axios(`http://mac-daftpunk.kaist.ac.kr:7777/?query=${query.toLowerCase()}`)
+			const serverData = await axios(`http://mac-daftpunk.kaist.ac.kr:7777/?query=${query}`)
 			setArtistdata(serverData.data.sim_artist.slice(0,3));
-			setTagdata(serverData.data.sim_tag.slice(0,3));
+			const displayTag = getDisplayTag(serverData.data.sim_tag.slice(0,5));
+			setTagdata(displayTag);
 			setSongdata(serverData.data.sim_track);
 			setSelectSong(serverData.data.sim_track[0]);
 			setLoading(false);
@@ -54,28 +58,45 @@ const MetaProvider = (props) => {
 		}
 	}
 
-	const onSearchChange = event => {
-		const {
-		  target: { value }
-		} = event;
-		setKeyWord(value);
-	  };
-
-	const onSearchSubmit = event => {
-		event.preventDefault();
-		getServerData(keyword)
+	const updateField = e => {
+		setKeyword(e.target.value)
+		setIDSearch(false)
 	};
 
-	const handleQuery = async(e) => {
-		const selectIndex = e.currentTarget.getAttribute('data-tag')
-		const selectInstance = songdata[selectIndex]
-		console.log(selectInstance)
-		// setSelectSong(selectInstance)
-		// setQuery(selectIndex)
-		// const fname = selectSong.fname.replace('.mp3', '.json')
-		// const musicdata = `http://mac-chopin5.kaist.ac.kr:8301/static/vectors/feature/${fname}`;
-		// const features = await axios(musicdata);
-		// setFeature(features.data)
+	const onSearchSubmit = e => {
+		e.preventDefault();
+		if (idSearch) {
+			getServerData(idkeyword);
+		} else {
+			getServerData(keyword);
+		}
+	};
+
+	const tagQuery = async(e) => {
+		const selectID = e.currentTarget.getAttribute('data-tag');
+		setIDSearch(false)
+		setKeyword(selectID)
+	};
+
+	const artistQuery = async(e) => {
+		const artistName = e.currentTarget.getAttribute('id');
+		const artistID = e.currentTarget.getAttribute('data-tag');
+		setIDSearch(true)
+		setKeyword(artistName)
+		setIDKeyword(artistID)
+	};
+
+	function getDisplayTag(tag_list){
+		const new_tag = []
+		tag_list.map(function(old_tag){
+			if (old_tag in tagmap){
+				new_tag.push(tagmap[old_tag])
+			} else {
+				new_tag.push(old_tag)
+			} return null;
+		}
+		);
+		return new_tag;
 	}
 
 	// handle music data
@@ -91,6 +112,14 @@ const MetaProvider = (props) => {
 			setCurrentTrackData(songdata[index])
 			setIsPlaying(true)
 		}
+	}
+
+	function resetPlay(){
+		setCurrentTrackIndex(-1)
+		setCurrentTrackData("")
+		setIsPlaying(false);
+		audioPlayer.pause();
+		setAudioPlayer(new Audio())
 	}
 
 	function togglePlay(){
@@ -118,15 +147,11 @@ const MetaProvider = (props) => {
 
 	return (
 		<MetaContext.Provider value={{
-			searchresult,
 			keyword,
-			handleQuery,
-			onSearchChange,
+			updateField,
 			onSearchSubmit,
-			loading,
-			query,
+			loading,	
             searchitem,
-			rootSong,
 			selectSong,
 			songdata,
 			tagdata,
@@ -138,6 +163,9 @@ const MetaProvider = (props) => {
 			isPlaying,
 			playPreviousTrack,
 			playNextTrack,
+			tagQuery,
+			artistQuery,
+			getDisplayTag
 		}}>
 			{props.children}
 		</MetaContext.Provider>

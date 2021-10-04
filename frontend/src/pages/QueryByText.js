@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { useContext } from 'react';
 import { MetaContext } from '../hook/DataManger'
 import { Wrapper } from '../styles/page';
@@ -12,7 +12,7 @@ const QueryByText = () => {
     const {loading} = mainContext;
     return (    
         <Wrapper>
-            <p>Million Song</p>
+            <p>Million Song Search</p>
             <SearchBar/>
             <QueryHelper/>
             {loading ? (

@@ -3,12 +3,16 @@ import styled from 'styled-components';
 
 export const ClickTypo = styled.span`
     color : orange;
-    border: 0px solid white;
-    ${({select}) => 
-        select === "yes" && `
-        border: 1px solid white;
-        `
-    };
+    background-color : black;
+    font-size: 15px;
+    cursor: pointer;
+    margin-right: 1rem;
+`;
+
+export const ClickTypoGary = styled.span`
+    font-size: 15px;
+    cursor: pointer;
+    margin-right: 10px;
 `;
 
 
@@ -74,7 +78,9 @@ export const Input = styled.input`
   font-size: 3rem;
   color: white;
   width: 100%;
+  border-bottom: 1px solid rgba(255,255,255,0.5);
   padding-bottom: 10px;
+  margin-bottom: 15px;
 `;
 
 export const InfoBar = styled.div `
@@ -183,9 +189,10 @@ export const BarProgressKnob = styled.span `
 `;
 
 
-export const Title = styled.span `
+export const Title = styled.span`
     font-size: 15px;
     font-weight: bold;
+    cursor: pointer;
     display: block;
 `;
 

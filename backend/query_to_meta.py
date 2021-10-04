@@ -13,6 +13,8 @@ app.config['JSON_AS_ASCII'] = False
 
 ## Model & Meta Data Load
 model = KeyedVectors.load('./static/dataset/word_model/model', mmap='r')
+tag_identifier = json.load(open("./static/dataset/use_tag.json",'r'))
+
 track_db = json.load(open("./static/collections/track_db.json",'r'))
 artist_db = json.load(open("./static/collections/artist_db.json",'r'))
 
@@ -29,7 +31,6 @@ MP3PATH = "./static/dataset/songs"
 id_to_path = pickle.load(open(os.path.join(ANNOTATION_PATH,'7D_id_to_path.pkl'), 'rb'))
 MSD_id_to_7D_id = pickle.load(open(os.path.join(ANNOTATION_PATH,'MSD_id_to_7D_id.pkl'), 'rb'))
 
-
 @app.errorhandler(404)
 def pageNotFound(error):
     return "page not found"
@@ -41,19 +42,40 @@ def raiseError(error):
 @app.route('/')
 def query_to_result():
     query = request.args['query']
+    types = "word"
+    if query in artist_db.keys():
+        types = "artist"
+    elif query in track_db.keys():
+        types = "track"
+    elif query.lower() in tag_identifier.keys():
+        types = "tag"
+        query = tag_identifier[query.lower()]
+    elif query.lower() in tag_identifier.values():
+        types = "tag"
+        query = query.lower()
     model_input = query.split()
     query_emb = [model.wv[i] for i in model_input if i in model.wv.vocab]
     query_emb = np.stack(query_emb)
-    sim_tag = F.get_entity(query_emb, tag_embs, tag_indices)
-    sim_artist = F.get_entity(query_emb, artist_embs, artist_indices)
-    sim_track = F.get_entity(query_emb, track_embs, track_indices)
-    sim_track_audio = [id_to_path[MSD_id_to_7D_id[i]] for i in sim_track]
+    sim_tag = F.get_entity(query_emb, tag_embs, tag_indices, 10)
+    sim_artist = F.get_entity(query_emb, artist_embs, artist_indices, 10)
+    sim_track = F.get_entity(query_emb, track_embs, track_indices, 10)
+    sim_track_list = []
+    for i in sim_track:
+        instance = track_db[i]
+        audio_path = id_to_path[MSD_id_to_7D_id[i]]
+        instance['audio_path'] = audio_path
+        sim_track_list.append(instance)
+    if types == "tag":
+        sim_tag = sim_tag[1:]
+    elif types == "artist":
+        sim_artist = sim_artist[1:]
+    elif types == "track":
+        sim_track_list = sim_track_list[1:]
     output = {
         'query': query,
         'sim_tag' : sim_tag,
         'sim_artist': [artist_db[i] for i in sim_artist],
-        'sim_track': [track_db[i] for i in sim_track],
-        'sim_track_audio': sim_track_audio
+        'sim_track': sim_track_list
     }
     return jsonify(**output)
 
