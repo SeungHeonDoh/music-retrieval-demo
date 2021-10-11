@@ -94,7 +94,6 @@ const MetaProvider = (props) => {
 	const onSearchSubmit = e => {
 		e.preventDefault();
 		var serverInput = keyword
-		console.log(serverInput.replace(replace, msdids))
 		getServerData(serverInput.replace(replace, msdids));
 	};
 
