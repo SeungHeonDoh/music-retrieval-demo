@@ -5,17 +5,18 @@ const MetaContext = React.createContext()
 
 const MetaProvider = (props) => {
 	// Contents Level
-    const [searchitem, setSearchItem] = useState([])
+	const [previewRender, setPreviewRender] = useState(false)
+	const [searchpreview, setSearchPreview] = useState([])
 	const [tagmap, setTagmap] = useState('')
 	const [keyword, setKeyword] = useState('')
+	const [msdids, setMSDIDs] = useState([])
+	const [replace, setReplace] = useState([])
+	const [backendinput, setBackEndInput] = useState('')
+
 	const [loading, setLoading] = useState(true)
 	const [songdata, setSongdata] = useState([])
 	const [tagdata, setTagdata] = useState([])
 	const [artistdata, setArtistdata] = useState([])
-
-	const [idSearch, setIDSearch] = useState(false)
-	const [idkeyword, setIDKeyword] = useState('')
-
 	// User Level
 	const [selectSong, setSelectSong] = useState('')
 
@@ -30,8 +31,6 @@ const MetaProvider = (props) => {
 		try {
 			const nomalize_to_display = await axios("http://mac-daftpunk.kaist.ac.kr:7777/static/dataset/nomalize_to_display.json");
 			setTagmap(nomalize_to_display.data);
-			// const baseData = await axios("http://mac-daftpunk.kaist.ac.kr:7777/static/collections/search_item.json");
-			// setSearchItem(baseData);
 			setLoading(false);
 		} catch (e) {
 			if (e) {
@@ -40,7 +39,21 @@ const MetaProvider = (props) => {
 		}
 	}
 
+	const filterQuery = async(searchInput) => {
+		if (searchInput !== "") {
+			setPreviewRender(true)
+			try {
+				const filterData = await axios(`http://143.248.249.166:7777/filter?search=${searchInput}`);
+				setSearchPreview(filterData.data.search_result);
+			} catch (e) {
+				console.log(e.message);
+			}
+		}
+	}
+	
+
 	const getServerData = async(query) => {
+		setPreviewRender(false);
 		setLoading(true);
 		resetPlay();
 		try{
@@ -59,31 +72,43 @@ const MetaProvider = (props) => {
 	}
 
 	const updateField = e => {
+		filterQuery(e.target.value)		
 		setKeyword(e.target.value)
-		setIDSearch(false)
 	};
 
+	const previewClick = (name, msd_id, type) => {
+		if (type === "artist"){
+			setKeyword(`'${name}'`)
+			setReplace(`'${name}'`)
+			setMSDIDs(msd_id)
+		} else if (type === "track") {
+			setKeyword(`"${name}"`)
+			setReplace(`"${name}"`)
+			setMSDIDs(msd_id)
+		} else {
+			setKeyword(name)
+		}
+		setPreviewRender(false);
+	}
+	
 	const onSearchSubmit = e => {
 		e.preventDefault();
-		if (idSearch) {
-			getServerData(idkeyword);
-		} else {
-			getServerData(keyword);
-		}
+		var serverInput = keyword
+		console.log(serverInput.replace(replace, msdids))
+		getServerData(serverInput.replace(replace, msdids));
 	};
 
 	const tagQuery = async(e) => {
 		const selectID = e.currentTarget.getAttribute('data-tag');
-		setIDSearch(false)
 		setKeyword(selectID)
+		getServerData(selectID);
 	};
 
 	const artistQuery = async(e) => {
 		const artistName = e.currentTarget.getAttribute('id');
 		const artistID = e.currentTarget.getAttribute('data-tag');
-		setIDSearch(true)
 		setKeyword(artistName)
-		setIDKeyword(artistID)
+		getServerData(artistID)
 	};
 
 	function getDisplayTag(tag_list){
@@ -148,10 +173,13 @@ const MetaProvider = (props) => {
 	return (
 		<MetaContext.Provider value={{
 			keyword,
+			setKeyword,
+			searchpreview,
 			updateField,
+			previewClick,
 			onSearchSubmit,
+			previewRender,
 			loading,	
-            searchitem,
 			selectSong,
 			songdata,
 			tagdata,

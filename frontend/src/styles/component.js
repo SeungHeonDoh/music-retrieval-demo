@@ -1,6 +1,63 @@
 
 import styled from 'styled-components';
 
+
+export const TagRecommedDiv = styled.div`
+    margin-top: 10px;
+`;
+
+
+export const PreviewDiv = styled.div`
+    width: 100%;
+`
+
+export const SearchDiv = styled.table`
+    width: 100%;
+    border-spacing: 0;
+    background-color: rgba(20, 20, 20, 0.5);
+    padding: 1px 1px;
+    border-top: 1px solid;
+    border-color: rgba(255, 255, 255, 0.5);
+    transition: 1s;
+    &:hover{
+        background-color: #000000;
+        background-color: rgba( 0, 0, 0, 0.5 );
+    }
+`;
+
+export const PreviewContainer = styled.tr`
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    padding-bottom: 1em;
+    padding-top: 1em;
+`;
+  
+export const TypeCell = styled.th`
+    width: ${(props) => props.width? props.width: "10%"};
+    margin-left : 15px;
+    text-align: left;
+`;
+
+export const EntityCell = styled.th`
+    width: ${(props) => props.width? props.width: "40%"};
+    text-align: left;
+`;
+
+export const Types = styled.span`
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: left;
+    font-weight: normal;
+`;
+
+export const Entity = styled.span`
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: left;
+    font-weight: normal;
+`;
+
 export const ClickTypo = styled.span`
     color : orange;
     background-color : black;
@@ -39,8 +96,6 @@ export const Table = styled.div`
 `;
 
 export const Clickdiv = styled.span`
-    // width:250px;
-    // height:250px;
     border: 0px solid white;
     ${({select}) => 
         select === "yes" && `
@@ -80,7 +135,6 @@ export const Input = styled.input`
   width: 100%;
   border-bottom: 1px solid rgba(255,255,255,0.5);
   padding-bottom: 10px;
-  margin-bottom: 15px;
 `;
 
 export const InfoBar = styled.div `
